@@ -27,7 +27,7 @@ COPY . .
 # Arguments go here so that the previous steps can be cached if no external sources
 # have changed. These arguments are automatically set by the docker engine.
 ARG TARGETPLATFORM
-ARG BUILDPLATFORM
+ARG BUILDPLATFORM="linux/amd64"
 
 # Reload version argument
 ARG VERSION

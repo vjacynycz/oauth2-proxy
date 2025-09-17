@@ -23,6 +23,9 @@
 help: ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+# Stratio CICD flow
+# Get version
+version ?= $(shell cat VERSION)
 
 GO ?= go
 GOLANGCILINT ?= golangci-lint
@@ -48,7 +51,25 @@ ifeq ($(COVER),true)
 TESTCOVER ?= -coverprofile c.out
 endif
 
-##@ Build
+ifeq ($(LINT),true)
+TESTLINT ?= lint
+endif
+
+.PHONY: all
+all: lint $(BINARY)
+
+.PHONY: clean
+clean:
+	-rm -rf release
+	-rm -f $(BINARY)
+
+.PHONY: distclean
+distclean: clean
+	rm -rf vendor
+
+.PHONY: lint
+lint: validate-go-version
+	GO111MODULE=on $(GOLANGCILINT) run
 
 .PHONY: build
 build: validate-go-version clean $(BINARY) ## Build and create oauth2-proxy binary from current source code
@@ -177,3 +198,7 @@ validate-go-version: ## Validate Go environment requirements
 .PHONY: local-env-%
 local-env-%:
 	make -C contrib/local-environment $*
+
+# Stratio CICD flow
+change-version:
+	@echo $(version) > VERSION
